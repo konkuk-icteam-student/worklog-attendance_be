@@ -1,90 +1,69 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.7'
+	id 'java'
+	id 'org.springframework.boot' version '4.0.8'
+	id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.better'
 version = '0.0.1-SNAPSHOT'
-description = 'worklog-attendance backend'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
 }
 
 configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
+}
+
+ext {
+	set('springBootAdminVersion', "4.0.4")
 }
 
 dependencies {
-    // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	//PostgreSQL 드라이버
+	implementation 'org.postgresql:postgresql'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// Swagger (SpringDoc OpenAPI 3)
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
+	// DevTools
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	//Querydsl
+	implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.6'
+	annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.6:jakarta'
+	annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
-    // OAuth2
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	//Jsoup
+	implementation 'org.jsoup:jsoup:1.17.2'
 
-    // Mail
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-    // WebSocket
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-
-    // Actuator
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // WebClient / WebFlux
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    // PostgreSQL
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // H2 - local/test
-    runtimeOnly 'com.h2database:h2'
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // Swagger / OpenAPI
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-
-    // DevTools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-
-    // Jsoup
-    implementation 'org.jsoup:jsoup:1.17.2'
-
-    // pgvector
-    implementation 'com.pgvector:pgvector:0.1.6'
-
-    // Hibernate Vector
-    implementation 'org.hibernate.orm:hibernate-vector:6.5.3.Final'
-
-    // Test
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+	// pgvector (PostgreSQL vector similarity search)
+	implementation 'com.pgvector:pgvector:0.1.6'
+	// Hibernate vector 지원
+	implementation 'org.hibernate.orm:hibernate-vector:7.2.24.Final'
 }
 
 def querydslDir = layout.buildDirectory.dir("generated/querydsl")
