@@ -1,5 +1,5 @@
 # Build stage
-FROM gradle:8.5-jdk17 AS build
+FROM gradle:8.14.3-jdk17 AS build
 WORKDIR /app
 
 # 1단계: 종속성 파일만 복사 (캐시 대상)
