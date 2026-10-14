@@ -53,7 +53,13 @@ jobs:
             StrictHostKeyChecking yes
           SSH_CONFIG
           chmod 600 "$HOME/.ssh/config"
+      - name: Verify SSH host key
+        run: |
+          echo "Checking known_hosts..."
+          ssh-keygen -F 203.252.168.90 -f "$HOME/.ssh/known_hosts"
 
+          echo "Testing SSH connection..."
+          ssh -v worklog-server "whoami"      
       - name: Synchronize source code
         shell: bash
         run: |
