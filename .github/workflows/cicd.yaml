@@ -1,0 +1,89 @@
+name: Deploy Worklog Attendance Backend
+
+on:
+  push:
+    branches:
+      - staging
+      - prod
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worklog-deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the pushed branch
+        uses: actions/checkout@v4
+
+      - name: Validate deployment branch
+        shell: bash
+        run: |
+          case "$GITHUB_REF_NAME" in
+            staging|prod) ;;
+            *) echo "Unsupported branch: $GITHUB_REF_NAME" >&2; exit 1 ;;
+          esac
+
+      - name: Set up deployment SSH key
+        shell: bash
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+          test -s "$HOME/.ssh/id_ed25519"
+          test -s "$HOME/.ssh/known_hosts"
+          cat > "$HOME/.ssh/config" <<'SSH_CONFIG'
+          Host worklog-server
+            HostName 203.252.168.90
+            User kuinfo_be
+            IdentityFile ~/.ssh/id_ed25519
+            IdentitiesOnly yes
+            BatchMode yes
+            StrictHostKeyChecking yes
+          SSH_CONFIG
+          chmod 600 "$HOME/.ssh/config"
+
+      - name: Synchronize source code
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="deploy/sources/$GITHUB_REF_NAME"
+          ssh worklog-server "mkdir -p '$TARGET'"
+          rsync -az --delete \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/.env' \
+            --exclude='/.env.*' \
+            --exclude='/build/' \
+            --exclude='/.gradle/' \
+            --exclude='/uploads/' \
+            --exclude='/logs/' \
+            --exclude='/data/' \
+            -e ssh \
+            ./ "worklog-server:$TARGET/"
+
+      - name: Rebuild and redeploy backend only
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh worklog-server "bash -se -- '$GITHUB_REF_NAME'" <<'REMOTE'
+          set -euo pipefail
+          branch="$1"
+          cd "$HOME/deploy/$branch"
+          test -f docker-compose.yaml || { echo 'Missing docker-compose.yaml' >&2; exit 1; }
+          test -f .env || { echo 'Missing .env' >&2; exit 1; }
+          docker compose -f docker-compose.yaml config --quiet
+          docker compose -f docker-compose.yaml up -d --no-deps --build app
+          docker compose -f docker-compose.yaml ps app
+          REMOTE
