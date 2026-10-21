@@ -22,6 +22,7 @@ public class SecurityConfig {
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml"
+                                "/actuator/health"
                         ).permitAll()
 
                         // 나머지 API는 인증 필요
