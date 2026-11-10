@@ -14,7 +14,7 @@
 기능별로 도메인을 나누고, 각 도메인 안에서 동일한 구조를 사용한다.
 
 ```
-com.commutemate
+com.better.Commutemate
 ├── global
 │   ├── config
 │   ├── error
