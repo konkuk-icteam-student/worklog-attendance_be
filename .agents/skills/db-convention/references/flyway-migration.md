@@ -14,7 +14,7 @@
 | 폴더 | 담는 테이블 |
 |---|---|
 | `member/` | `organization`, `member`, `member_profile`, `email_verification_code`, `password_reset_token` |
-| `commute/` | `workplace`, `work_*`, `todo`, `todo_completion`, `notification`, `notification_check_state` |
+| `work_schedule/` | `workplace`, `work_*`, `todo`, `todo_completion`, `notification`, `notification_check_state` |
 | `faq/` | FAQ (나중에) |
 
 - 나중에 앱을 컨테이너 단위로 나눌 때 그 도메인의 마이그레이션 폴더만 옮기면 되게 하려고 폴더를 나눈다.
@@ -24,15 +24,15 @@
 ```yaml
 spring:
   flyway:
-    locations: classpath:db/migration/member, classpath:db/migration/commute
+    locations: classpath:db/migration/member, classpath:db/migration/work_schedule
 ```
 
 ## 파일 이름
 
 형식은 `V{번호}__{설명}.sql`.
 
-- 번호는 폴더와 상관없이 전체에서 하나로 이어진다. Flyway는 모든 폴더의 파일을 번호 순서대로 한 줄로 실행한다. 예: `member/V1__create_member_tables.sql`, `commute/V2__create_commute_tables.sql`, `commute/V3__add_work_schedule_history.sql`
-- 다른 도메인 테이블을 가리키는 FK가 있으면 그 테이블을 만드는 파일이 더 앞 번호여야 한다. 예: commute의 `member_id` FK → member 테이블이 먼저
+- 번호는 폴더와 상관없이 전체에서 하나로 이어진다. Flyway는 모든 폴더의 파일을 번호 순서대로 한 줄로 실행한다. 예: `member/V1__create_member_tables.sql`, `work_schedule/V2__create_work_schedule_tables.sql`, `work_schedule/V3__add_work_schedule_history.sql`
+- 다른 도메인 테이블을 가리키는 FK가 있으면 그 테이블을 만드는 파일이 더 앞 번호여야 한다. 예: work_schedule의 `member_id` FK → member 테이블이 먼저
 - 설명은 영어 snake_case 동사로 시작한다. 예: `V3__add_work_schedule_history.sql`, `V4__alter_todo_drop_todo_date.sql`
 - 번호 관리는 한 명이 맡는다. 테이블 변경이 필요하면 담당자에게 요청하거나, PR에서 담당자가 번호를 확인한다. 두 사람이 같은 번호를 쓰면 나중에 머지하는 쪽이 번호를 올린다.
 
@@ -55,7 +55,7 @@ CREATE TABLE work_schedule_history ( ... );          -- 1. 테이블
 ALTER TABLE work_schedule_history ADD CONSTRAINT ...; -- 2. 제약 (FK, UNIQUE, CHECK)
 
 CREATE INDEX idx_work_schedule_history_member_id_work_date
-  ON work_schedule_history (member_id, work_date);    -- 3. 인덱스 (필요할 때만)
+  ON work_schedule_history (member_id, work_date);    -- 3. 인덱스 (FK 인덱스는 필수, 성능용은 필요할 때만)
 
 COMMENT ON TABLE work_schedule_history IS '...';      -- 4. COMMENT
 ```

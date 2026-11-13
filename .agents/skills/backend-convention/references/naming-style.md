@@ -10,7 +10,7 @@
 
 | 대상 | 규칙 | 예시 |
 |---|---|---|
-| 패키지 | 소문자 | `member`, `commute` |
+| 패키지 | 소문자 | `member`, `work_schedule` |
 | 클래스, Enum, Record | PascalCase | `MemberResponse` |
 | 메서드, 변수, 필드 | camelCase | `memberId`, `findMember` |
 | 상수 | UPPER_SNAKE_CASE | `MAX_PAGE_SIZE` |

@@ -14,7 +14,7 @@
 기능별로 도메인을 나누고, 각 도메인 안에서 동일한 구조를 사용한다.
 
 ```
-com.better.Commutemate
+com.better.CommuteMate
 ├── global
 │   ├── config
 │   ├── error
@@ -31,10 +31,7 @@ com.better.Commutemate
 │   ├── repository
 │   └── exception
 │
-├── commute
-│   └── (member와 같은 구조)
-│
-└── notification
+└── work_schedule
     └── (member와 같은 구조)
 ```
 
@@ -75,7 +72,7 @@ Controller는 HTTP 요청과 응답만 담당한다.
 ```java
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/work-schedules")
+@RequestMapping("/api/v1/work-schedules")
 public class WorkScheduleController {
 
     private final WorkScheduleService workScheduleService;
@@ -99,7 +96,7 @@ public class WorkScheduleController {
 
 Service는 비즈니스 로직과 트랜잭션을 담당한다.
 
-- 클래스명은 `{도메인}Service` 또는 `{기능}{도메인}Service`로 작성한다. 예: `MemberService`, `WorkScheduleService`, `NotificationService`
+- 클래스명은 `{도메인}Service` 또는 `{기능}{도메인}Service`로 작성한다. 예: `MemberService`, `WorkScheduleService`
 - `XxxServiceImpl`은 사용하지 않는다.
 - 쓰기 작업에는 `@Transactional`, 조회 작업에는 `@Transactional(readOnly = true)`를 사용한다.
 - public 메서드 하나는 하나의 유스케이스만 담당한다.
@@ -113,14 +110,13 @@ Service는 비즈니스 로직과 트랜잭션을 담당한다.
 public class WorkScheduleService {
 
     private final WorkScheduleRepository workScheduleRepository;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
     public WorkScheduleResponse create(
             Long memberId,
             CreateWorkScheduleRequest request
     ) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+        Member member = memberService.loadMember(memberId);
 
         WorkSchedule workSchedule = WorkSchedule.create(
                 member,
